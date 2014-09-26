@@ -10,8 +10,8 @@ func home(rw http.ResponseWriter, r *http.Request) {
 	io.WriteString(rw, "Welcome home")
 }
 
-func home2() {
-
+func login(rw http.ResponseWriter, r *http.Request) {
+	io.WriteString(rw, "please login")
 }
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 
 	m.AddRouter("/", home)
 
-	//m.AddRouter("/home", home2)
+	m.AddRouter("/login", login)
 
 	m.Run()
 }

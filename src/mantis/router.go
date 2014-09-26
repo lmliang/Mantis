@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-type HandlerFunc func(http.ResponseWriter, *http.Request)
 type Handler interface{}
 
 func typeOfPtr(i interface{}) reflect.Type {
@@ -22,9 +21,11 @@ func typeOfPtr(i interface{}) reflect.Type {
 
 func validHandler(i interface{}) bool {
 	t := typeOfPtr(i)
-	fmt.Println("validHandler: ", t)
 
 	if t.Kind() == reflect.Func {
+		if _, ok := i.(func(http.ResponseWriter, *http.Request)); ok {
+			return true
+		}
 	} else if t.Kind() == reflect.Interface {
 		if _, ok := i.(Handler); ok {
 			return true

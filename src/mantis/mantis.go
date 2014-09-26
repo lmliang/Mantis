@@ -12,7 +12,6 @@ type Mantis struct {
 }
 
 func (m *Mantis) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	m.logger.Println("Begin ServeHTTP")
 	m.Handle(rw, r)
 }
 

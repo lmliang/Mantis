@@ -1,6 +1,7 @@
 package mantis
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
@@ -26,7 +27,8 @@ func (rt *route) Match(pattern string, method string) bool {
 }
 
 func (rt *route) Handle(rw http.ResponseWriter, r *http.Request) {
-	t := reflect.TypeOf(rt.handler)
+	fmt.Println("call Handle")
+	t := typeOfPtr(rt.handler)
 	v := reflect.ValueOf(rt.handler)
 
 	if t.Kind() == reflect.Func {
@@ -34,12 +36,40 @@ func (rt *route) Handle(rw http.ResponseWriter, r *http.Request) {
 		in[0] = reflect.ValueOf(rw)
 		in[1] = reflect.ValueOf(r)
 		v.Call(in)
-	} else if t.Kind() == reflect.Interface {
-		if _, ok := rt.handler.(Handler); ok {
-
+	} else if t.Kind() == reflect.Struct {
+		if ctrl, ok := rt.handler.(Controller); ok {
+			fmt.Println("call dispatchController")
+			dispatchController(rw, r, ctrl)
 		}
-	} else {
+	}
+}
 
+func dispatchController(rw http.ResponseWriter, r *http.Request, c Controller) {
+	ctx := newContext(rw, r)
+
+	fmt.Println("dispatchController set ctx")
+
+	ctrl := valueOfPtr(c)
+	if fd := ctrl.FieldByName("Ctx"); fd.IsValid() && fd.CanSet() {
+		fmt.Println("dispatchController set ctx")
+		fd.Set(reflect.ValueOf(ctx))
+	}
+
+	switch strings.ToUpper(r.Method) {
+	case "GET":
+		c.Get()
+	case "POST":
+		c.Post()
+	case "PUT":
+		c.Put()
+	case "PATCH":
+		c.Patch()
+	case "DELETE":
+		c.Delete()
+	case "HEAD":
+		c.Head()
+	case "OPTIONS":
+		c.Options()
 	}
 }
 

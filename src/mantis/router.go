@@ -19,6 +19,16 @@ func typeOfPtr(i interface{}) reflect.Type {
 	return t
 }
 
+func valueOfPtr(i interface{}) reflect.Value {
+	v := reflect.ValueOf(i)
+
+	for v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	return v
+}
+
 func validHandler(i interface{}) bool {
 	t := typeOfPtr(i)
 
@@ -26,8 +36,8 @@ func validHandler(i interface{}) bool {
 		if _, ok := i.(func(http.ResponseWriter, *http.Request)); ok {
 			return true
 		}
-	} else if t.Kind() == reflect.Interface {
-		if _, ok := i.(Handler); ok {
+	} else if t.Kind() == reflect.Struct {
+		if _, ok := i.(Controller); ok {
 			return true
 		}
 	}

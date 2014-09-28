@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"io"
 	"mantis"
 	"net/http"
@@ -16,8 +16,18 @@ type LoginController struct {
 }
 
 func (c *LoginController) Get() {
-	fmt.Println("LoginCtrl Get")
-	io.WriteString(c.Ctx.Resp, "Please Login")
+	t, err := template.ParseFiles("html/login.html")
+	if err == nil {
+		t.Execute(c.Ctx.Resp, nil)
+		return
+	} else {
+		io.WriteString(c.Ctx.Resp, "Please Login")
+	}
+}
+
+func (c *LoginController) Post() {
+	fmt.Println(c.Ctx.Input)
+	c.Redirect("/", 301)
 }
 
 func main() {

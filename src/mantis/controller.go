@@ -1,7 +1,6 @@
 package mantis
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -23,7 +22,6 @@ type DefaultController struct {
 }
 
 func (c *DefaultController) Get() {
-	fmt.Println("Enter Controller Get")
 	http.Error(c.Ctx.Resp, "Method Not Allowed", 405)
 }
 

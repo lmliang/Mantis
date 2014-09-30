@@ -1,6 +1,8 @@
 package mantis
 
 import (
+	"fmt"
+	"html/template"
 	"net/http"
 )
 
@@ -12,6 +14,9 @@ type Controller interface {
 	Delete()
 	Head()
 	Options()
+	Before()
+	Finish()
+	Render()
 	Redirect(string, int)
 }
 
@@ -47,6 +52,29 @@ func (c *DefaultController) Head() {
 
 func (c *DefaultController) Options() {
 	http.Error(c.Ctx.Resp, "Method Not Allowed", 405)
+}
+
+func (c *DefaultController) Before() {
+	c.Tmpl = ""
+	c.Data = make(map[interface{}]interface{})
+}
+
+func (c *DefaultController) Finish() {
+
+}
+
+func (c *DefaultController) Render() {
+	if len(c.Tmpl) > 0 {
+		t, err := template.ParseFiles(c.Tmpl)
+		if err == nil {
+			err = t.Execute(c.Ctx.Resp, c.Data)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		} else {
+			fmt.Println(err.Error())
+		}
+	}
 }
 
 func (c *DefaultController) Redirect(url string, code int) {

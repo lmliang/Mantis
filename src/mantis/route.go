@@ -44,6 +44,8 @@ func (rt *route) Handle(rw http.ResponseWriter, r *http.Request) {
 func dispatchController(rw http.ResponseWriter, r *http.Request, c Controller) {
 	ctx := newContext(rw, r)
 
+	c.Before()
+
 	ctrl := valueOfPtr(c)
 	if fd := ctrl.FieldByName("Ctx"); fd.IsValid() && fd.CanSet() {
 		fd.Set(reflect.ValueOf(ctx))
@@ -64,11 +66,26 @@ func dispatchController(rw http.ResponseWriter, r *http.Request, c Controller) {
 		case "OPTIONS":
 			c.Options()
 		}
+
+		c.Render()
+
+		c.Finish()
+
 	} else {
 		panic("Dispatch Controller Failed.")
 	}
 }
 
 func newRoute(method string, pattern string, h Handler) Route {
+	t := typeOfPtr(h)
+
+	if t.Kind() == reflect.Struct {
+		ctrl := valueOfPtr(h)
+		if fd := ctrl.FieldByName("Data"); fd.IsValid() && fd.CanSet() {
+			m := make(map[interface{}]interface{})
+			fd.Set(reflect.ValueOf(m))
+		}
+	}
+
 	return &route{method: method, pattern: pattern, handler: h}
 }
